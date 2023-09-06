@@ -1,2 +1,6 @@
 server:
   port: 9527
+chatBot-api:
+  hostname: 127.0.0.1
+  port: 10809
+  openAiKey: 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

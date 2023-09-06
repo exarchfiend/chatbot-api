@@ -1,1 +1,0 @@
-package fun.mjauto.chatbot.api.domain;
