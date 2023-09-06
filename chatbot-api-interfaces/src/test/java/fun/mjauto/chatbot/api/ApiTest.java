@@ -36,10 +36,10 @@ public class ApiTest {
 
         // 设置HTTP请求头，包括Content-Type和Authorization
         post.addHeader("Content-Type", "application/json");
-        post.addHeader("Authorization", "Bearer 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");
+        post.addHeader("Authorization", "Bearer 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");
 
         // 构建请求参数的JSON字符串
-        String paramJson = "{\"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"介绍一下大语言模型。\"}], \"temperature\": 0.7}\n";
+        String paramJson = "{\"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"请介绍一下大语言模型。\"}], \"temperature\": 0.7}\n";
 
         // 创建一个StringEntity，用于将JSON参数添加到请求体中
         StringEntity stringEntity = new StringEntity(paramJson, ContentType.create("text/json", "UTF-8"));
@@ -58,5 +58,4 @@ public class ApiTest {
             System.out.println(response.getStatusLine().getStatusCode());
         }
     }
-
 }
