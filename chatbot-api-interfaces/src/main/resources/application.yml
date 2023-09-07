@@ -3,4 +3,4 @@ server:
 chatBot-api:
   hostname: 127.0.0.1
   port: 10809
-  openAiKey: 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
+  openAiKey: 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
