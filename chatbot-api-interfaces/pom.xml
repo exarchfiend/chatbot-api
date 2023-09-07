@@ -34,7 +34,6 @@
             <groupId>fun.mjauto.ai</groupId>
             <artifactId>chatbot-api-domain</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
