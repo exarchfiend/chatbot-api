@@ -5,6 +5,7 @@ import fun.mjauto.chatbot.api.domain.ai.IOpenAI;
 import fun.mjauto.chatbot.api.domain.ai.model.aggregates.AIAnswer;
 import fun.mjauto.chatbot.api.domain.ai.model.aggregates.AIQuestion;
 import fun.mjauto.chatbot.api.domain.ai.model.vo.Choices;
+import fun.mjauto.chatbot.api.domain.wx.controller.WeChatController;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
@@ -15,6 +16,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,8 @@ import java.util.List;
 
 @Service
 public class OpenAI implements IOpenAI {
+    private final Logger logger = LoggerFactory.getLogger(WeChatController.class);
+
     @Value("${chatBot-api.hostname}")
     private String hostname;
     @Value("${chatBot-api.port}")
@@ -79,13 +84,14 @@ public class OpenAI implements IOpenAI {
                 answers.append(choice.getMessage().getContent());
             }
             // 返回构建的答案字符串
+            logger.info("AI的回答：" + answers);
             return answers.toString();
         } else {
             // 如果状态码不是200，则打印状态码并抛出异常
 
             // 抛出运行时异常，包含错误信息和HTTP响应的状态码
-            throw new RuntimeException("api.openai.com Err Code is " + response.getStatusLine().getStatusCode());
+            logger.error("访问OpenAI发生错误：" + response.getStatusLine().getStatusCode(), new RuntimeException());
+            return "AI抛锚了说是";
         }
-
     }
 }
