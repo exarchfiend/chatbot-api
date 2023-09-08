@@ -1,14 +1,14 @@
 package fun.mjauto.chatbot.api.domain.wx.controller;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import fun.mjauto.chatbot.api.domain.wx.model.dto.WeChatCallbackEvent;
 import fun.mjauto.chatbot.api.domain.wx.utils.aes.AesException;
-import fun.mjauto.chatbot.api.domain.wx.utils.aes.WXBizJsonMsgCrypt;
+import fun.mjauto.chatbot.api.domain.wx.utils.aes.WXBizMsgCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import java.io.StringReader;
 
 @RestController
 @RequestMapping("/weChat")
@@ -16,10 +16,13 @@ public class WeChatController {
 
     private final Logger logger = LoggerFactory.getLogger(WeChatController.class);
 
+    // 用于生成签名校验回调请求的合法性
     @Value("${chatBot-api.token}")
     String sToken;
+    // 用于解密回调消息内容对应的密文
     @Value("${chatBot-api.corpID}")
     String sCorpID;
+    // 企业ID
     @Value("${chatBot-api.encodingAESKey}")
     String sEncodingAESKey;
 
@@ -34,16 +37,17 @@ public class WeChatController {
      * @return 解密出的echostr原文
      * @throws AesException 如果发生某种异常，会抛出AesException
      */
-    @GetMapping("/verifyCallback")
-    public String verifyCallback(@RequestParam("msg_signature") String sVerifyMsgSig,
+    @GetMapping("/callback")
+    public String verifyUrl(@RequestParam("msg_signature") String sVerifyMsgSig,
                                  @RequestParam("timestamp") String sVerifyTimeStamp,
                                  @RequestParam("nonce") String sVerifyNonce,
                                  @RequestParam("echostr") String sVerifyEchoStr) throws AesException {
-        // 将开发者设置好的Token(用于生成签名校验回调请求的合法性),EncodingAESKey(用于解密回调消息内容对应的密文)和CorpID(企业ID)传给加解密类WXBizJsonMsgCrypt
-        WXBizJsonMsgCrypt wxcpt = new WXBizJsonMsgCrypt(sToken, sEncodingAESKey, sCorpID);
+        // 将开发者设置好的Token,EncodingAESKey和CorpID传给加解密类WXBizJsonMsgCrypt
+        WXBizMsgCrypt wxcpt = new WXBizMsgCrypt(sToken, sEncodingAESKey, sCorpID);
         // 需要返回的明文
         String sEchoStr = null;
         try {
+            // 验证URL
             sEchoStr = wxcpt.VerifyURL(sVerifyMsgSig, sVerifyTimeStamp,sVerifyNonce, sVerifyEchoStr);
         } catch (Exception e) {
             //验证URL失败，错误原因请查看异常
@@ -51,5 +55,38 @@ public class WeChatController {
         }
         // 验证URL成功，将sEchoStr返回
         return sEchoStr;
+    }
+
+    /**
+     * 回调事件
+     * 用户回复消息或者点击事件响应时，企业会收到回调消息，此消息是经过企业微信加密之后的密文以post形式发送给企业,此方法用于接收该回调消息
+     *
+     * @param sReqMsgSig 消息体签名
+     * @param sReqTimeStamp 时间戳
+     * @param sReqNonce 随机数字串
+     * @param sReqData 回调消息
+     * @throws AesException 如果发生某种异常，会抛出AesException
+     */
+    @PostMapping("/callback")
+    public void callback(@RequestParam("msg_signature") String sReqMsgSig,
+                                 @RequestParam("timestamp") String sReqTimeStamp,
+                                 @RequestParam("nonce") String sReqNonce,
+                                 @RequestBody String sReqData) throws AesException {
+        // 将开发者设置好的Token,EncodingAESKey和CorpID传给加解密类WXBizJsonMsgCrypt
+        WXBizMsgCrypt wxcpt = new WXBizMsgCrypt(sToken, sEncodingAESKey, sCorpID);
+        try {
+            // 检验消息的真实性，并且获取解密后的明文.
+            String sMsg = wxcpt.DecryptMsg(sReqMsgSig, sReqTimeStamp, sReqNonce, sReqData);
+            System.out.println(sMsg);
+
+            // 解析出明文xml标签的内容进行处理
+            // 创建 XmlMapper 对象
+            XmlMapper xmlMapper = new XmlMapper();
+            // 将 XML 字符串解析为 Java 对象
+            WeChatCallbackEvent weChatCallbackEvent = xmlMapper.readValue(sMsg, WeChatCallbackEvent.class);
+            System.out.println(weChatCallbackEvent);
+        } catch (Exception e) {
+            logger.error("回调事件发生错误：", e);
+        }
     }
 }

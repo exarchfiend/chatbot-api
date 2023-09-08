@@ -1,0 +1,14 @@
+server:
+  port: 9527
+  ssl:
+    enabled: true
+    key-store: classpath:mjauto.fun.jks
+    key-store-password: 895to15r1455
+    key-store-type: jks
+chatBot-api:
+  hostname: 127.0.0.1
+  port: 10809
+  openAiKey: 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
+  token: B6KhmQJlpxc4A4PR3Vw8Zh9
+  corpID: wwb0850b2be6be7af2
+  encodingAESKey: DdcWHh9dZswhylgXC1ynnpUOFnPe9wCD76r8dOQ73hj

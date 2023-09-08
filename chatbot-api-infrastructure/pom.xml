@@ -6,17 +6,11 @@
         <artifactId>chatbot-api</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>chatbot-api-infrastructure</artifactId>
     <packaging>jar</packaging>
-
-    <name>chatbot-api-infrastructure</name>
-    <url>http://maven.apache.org</url>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
